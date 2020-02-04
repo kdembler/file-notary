@@ -5,6 +5,7 @@ import multiprocessing as mp
 from hashlib import sha256
 from web3 import Web3, HTTPProvider
 from cobra_hdwallet import HDWallet
+from utils import safe_getenv
 
 
 def start_notary():
@@ -21,16 +22,7 @@ class EthereumHandler():
 
         self._set_infura_web3()
         self._load_contract_info()
-
-        # TODO: move to .env
-        with open('eth/.pub') as pub_file:
-            self.address = pub_file.readline().strip()
-
-        with open('eth/.secret') as secret_file:
-            mnemonic = secret_file.readline().strip()
-            hd_wallet = HDWallet()
-            account = hd_wallet.create_hdwallet(mnemonic)
-            self.private_key = bytearray.fromhex(account['private_key'])
+        self._load_account_info()
 
         self.logger.info('initalized web3 and loaded contract info')
 
@@ -39,13 +31,7 @@ class EthereumHandler():
         p.start()
 
     def _set_infura_web3(self):
-        infura_endpoint = os.getenv("INFURA_ENDPOINT")
-        chain_id = os.getenv("CHAIN_ID")
-
-        if infura_endpoint is None:
-            raise Exception("Endpoint not defined in the env")
-        if chain_id is None:
-            raise Exception("Chain id not defined in the env")
+        infura_endpoint = safe_getenv("ETH_INFURA_ENDPOINT")
 
         self.web3 = Web3(HTTPProvider(infura_endpoint))
         if not self.web3.isConnected():
@@ -58,6 +44,13 @@ class EthereumHandler():
             address=contract['address'],
             abi=contract['abi']
         )
+
+    def _load_account_info(self):
+        account_mnemonic = safe_getenv("ETH_ACCOUNT_MNEMONIC")
+        hd_wallet = HDWallet()
+        account = hd_wallet.create_hdwallet(account_mnemonic)
+        self.address = account['address']
+        self.private_key = bytearray.fromhex(account['private_key'])
 
     def _process_queue(self):
         self.logger.info('starting queue processing')

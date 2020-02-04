@@ -3,6 +3,7 @@ import os
 import multiprocessing as mp
 import logging
 from botocore.exceptions import NoCredentialsError
+from utils import safe_getenv
 
 
 def start_uploader():
@@ -18,10 +19,7 @@ class Uploader:
         self.logger = logging.getLogger('uploader')
 
         self._set_s3_client()
-
-        self.bucket_name = os.getenv('BUCKET_NAME')
-        if self.bucket_name is None:
-            raise Exception('Bucket name not defined')
+        self.bucket_name = safe_getenv('S3_BUCKET_NAME')
 
         self.logger.info(f'initialized for bucket {self.bucket_name}')
 
@@ -37,10 +35,9 @@ class Uploader:
         p.start()
 
     def _set_s3_client(self):
-        access_key = os.getenv('ACCESS_KEY')
-        secret_key = os.getenv('SECRET_KEY')
-        if access_key is None or secret_key is None:
-            raise Exception('AWS Credentials not found')
+        access_key = safe_getenv('S3_ACCESS_KEY')
+        secret_key = safe_getenv('S3_SECRET_KEY')
+
         self.s3 = boto3.client('s3', aws_access_key_id=access_key,
                                aws_secret_access_key=secret_key,
                                region_name='eu-central-1',
