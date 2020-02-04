@@ -3,12 +3,11 @@
 from dotenv import load_dotenv
 from flask import Flask, request
 from flask_cors import CORS
-from uploader import Uploader
 from logger import logger_init
+from uploader import start_uploader
 from eth import start_notary
 import utils
 import logging
-import multiprocessing as mp
 
 # initial configuration
 load_dotenv()
@@ -20,12 +19,8 @@ logger = logging.getLogger()
 app = Flask(__name__)
 CORS(app)
 
-# create uploader worker
-# TODO: move queue creation to uploader, like notary
-upload_queue = mp.Queue()
-uploader = Uploader(upload_queue)
-uploader.run()
-
+# create workers
+uploader, upload_queue = start_uploader()
 notary_queue = start_notary()
 
 

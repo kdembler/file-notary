@@ -6,72 +6,74 @@ from web3 import Web3, HTTPProvider
 from cobra_hdwallet import HDWallet
 
 
-def _get_infura_web3():
-    infura_endpoint = os.getenv("INFURA_ENDPOINT")
-    chain_id = os.getenv("CHAIN_ID")
-
-    if infura_endpoint is None:
-        raise Exception("Endpoint not defined in the env")
-    if chain_id is None:
-        raise Exception("Chain id not defined in the env")
-
-    return Web3(HTTPProvider(infura_endpoint))
-
-
-def _load_contract_info(w3):
-    with open('eth/fileNotary.json') as json_file:
-        contract = json.load(json_file)
-    notary = w3.eth.contract(
-        address=contract['address'],
-        abi=contract['abi']
-    )
-    return notary
-
-
-def _init_web3():
-    logger = logging.getLogger('eth')
-    w3 = _get_infura_web3()
-    if not w3.isConnected():
-        raise Exception('web3 did not connect')
-    logger.info('web3 connected')
-    contract = _load_contract_info(w3)
-    return w3, contract
-
-
 def start_notary():
-    w3, contract = _init_web3()
-    # TODO: move to .env
-    with open('eth/.pub') as pub_file:
-        address = pub_file.readline().strip()
-
-    with open('eth/.secret') as secret_file:
-        mnemonic = secret_file.readline().strip()
-    hd_wallet = HDWallet()
-    account = hd_wallet.create_hdwallet(mnemonic)
-    private_key = bytearray.fromhex(account['private_key'])
     notary_queue = mp.Queue()
-    p = mp.Process(target=_notary_runner, args=(w3, contract, address, private_key, notary_queue))
-    p.start()
+    ethereum_handler = EthereumHandler(notary_queue)
+    ethereum_handler.run()
+
     return notary_queue
 
+class EthereumHandler():
+    def __init__(self, notary_queue):
+        self.notary_queue = notary_queue
+        self.logger = logging.getLogger('eth')
 
-def _notary_runner(w3, contract, address, private_key, queue):
-    logger = logging.getLogger('eth')
-    logger.info('starting queue processing')
-    while True:
-        logger.info('waiting for data to process')
-        file_name, file_hash = queue.get()
+        self._set_infura_web3()
+        self._load_contract_info()
 
-        try:
-            nonce = w3.eth.getTransactionCount(address)
-            logger.info(f'notarizing {file_name} with hash {file_hash} and nonce {nonce}')
-            txn = contract.functions.setFileHash(file_name, file_hash).buildTransaction({
-                'from': address,
-                'nonce': nonce
-            })
+        # TODO: move to .env
+        with open('eth/.pub') as pub_file:
+            self.address = pub_file.readline().strip()
 
-            signed_txn = w3.eth.account.sign_transaction(txn, private_key=private_key)
-            txn_hash = w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-            logger.info(f'transaction {txn_hash.hex()} sent')
-        except Exception as e:
-            logger.error(f'failed to notarize {file_name}: {e}')
+        with open('eth/.secret') as secret_file:
+            mnemonic = secret_file.readline().strip()
+            hd_wallet = HDWallet()
+            account = hd_wallet.create_hdwallet(mnemonic)
+            self.private_key = bytearray.fromhex(account['private_key'])
+
+        self.logger.info('initalized web3 and loaded contract info')
+
+    def run(self):
+        p = mp.Process(target=self._process_queue)
+        p.start()
+
+    def _set_infura_web3(self):
+        infura_endpoint = os.getenv("INFURA_ENDPOINT")
+        chain_id = os.getenv("CHAIN_ID")
+
+        if infura_endpoint is None:
+            raise Exception("Endpoint not defined in the env")
+        if chain_id is None:
+            raise Exception("Chain id not defined in the env")
+
+        self.web3 = Web3(HTTPProvider(infura_endpoint))
+        if not self.web3.isConnected():
+            raise Exception('web3 did not connect')
+
+    def _load_contract_info(self):
+        with open('eth/fileNotary.json') as json_file:
+            contract = json.load(json_file)
+        self.notary_contract = self.web3.eth.contract(
+            address=contract['address'],
+            abi=contract['abi']
+        )
+
+    def _process_queue(self):
+        self.logger.info('starting queue processing')
+        while True:
+            self.logger.info('waiting for data to process')
+            file_name, file_hash = self.notary_queue.get()
+
+            try:
+                nonce = self.web3.eth.getTransactionCount(self.address)
+                self.logger.info(f'notarizing {file_name} with hash {file_hash} and nonce {nonce}')
+                txn = self.notary_contract.functions.setFileHash(file_name, file_hash).buildTransaction({
+                    'from': self.address,
+                    'nonce': nonce
+                })
+
+                signed_txn = self.web3.eth.account.sign_transaction(txn, private_key=self.private_key)
+                txn_hash = self.web3.eth.sendRawTransaction(signed_txn.rawTransaction)
+                self.logger.info(f'transaction {txn_hash.hex()} sent')
+            except Exception as e:
+                self.logger.error(f'failed to notarize {file_name}: {e}')
