@@ -50,12 +50,10 @@ class Uploader:
         self.logger.info('starting queue processing')
         while True:
             self.logger.info('waiting for file to process')
-            filename, filepath = self.upload_queue.get()
+            filename, file_stream = self.upload_queue.get()
             self.logger.info(f'processing {filename}')
             try:
-                # TODO: consider using upload_fileobj
-                self.s3.upload_file(filepath, self.bucket_name, filename)
-                os.remove(filepath)
+                self.s3.upload_fileobj(file_stream, self.bucket_name, filename)
                 self.logger.info(f'processed {filename}')
             except NoCredentialsError:
                 self.logger.error(f'invalid credentials')

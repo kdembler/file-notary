@@ -2,6 +2,7 @@ import os
 import logging
 import json
 import multiprocessing as mp
+from hashlib import sha256
 from web3 import Web3, HTTPProvider
 from cobra_hdwallet import HDWallet
 
@@ -62,7 +63,11 @@ class EthereumHandler():
         self.logger.info('starting queue processing')
         while True:
             self.logger.info('waiting for data to process')
-            file_name, file_hash = self.notary_queue.get()
+            file_name, file_bytes = self.notary_queue.get()
+
+            digester = sha256()
+            digester.update(file_bytes)
+            file_hash = digester.hexdigest()
 
             try:
                 nonce = self.web3.eth.getTransactionCount(self.address)

@@ -6,6 +6,7 @@ from flask_cors import CORS
 from logger import logger_init
 from uploader import start_uploader
 from eth import start_notary
+from io import BytesIO
 import utils
 import logging
 
@@ -30,17 +31,18 @@ def upload():
     if 'file' not in request.files:
         return utils.bad_request('No file in request')
     file = request.files['file']
-    if file.filename == '':
+    filename = file.filename
+    if filename == '':
         return utils.bad_request('Empty filename')
 
-    # TODO: move hashing to notary thread
-    file_hash = utils.get_file_hash(file)
-    file_name, file_path = utils.save_temp_file(file)
+    file_bytes = file.read()
+    file.close()
+    file_stream = BytesIO(file_bytes)
 
-    upload_queue.put((file_name, file_path))
-    notary_queue.put((file_name, file_hash))
+    upload_queue.put((filename, file_stream))
+    notary_queue.put((filename, file_bytes))
 
-    return {'file_hash': file_hash, 'file_name': file_name}, 200
+    return {'file_name': filename}, 200
 
 
 @app.route('/download-url')
