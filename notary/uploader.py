@@ -6,7 +6,7 @@ from botocore.exceptions import NoCredentialsError
 
 
 class Uploader:
-    def __init__(self, upload_queue, log_queue):
+    def __init__(self, upload_queue):
         access_key = os.getenv('ACCESS_KEY')
         secret_key = os.getenv('SECRET_KEY')
         bucket_name = os.getenv('BUCKET_NAME')
@@ -23,7 +23,6 @@ class Uploader:
         self.bucket_name = bucket_name
 
         self.upload_queue = upload_queue
-        self.log_queue = log_queue
         self.logger = logging.getLogger('uploader')
         self.logger.info(f'initialized for bucket {bucket_name}')
 

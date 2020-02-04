@@ -12,7 +12,7 @@ import multiprocessing as mp
 
 # initial configuration
 load_dotenv()
-log_queue, log_listener = logger_init()
+logger_init()
 
 logger = logging.getLogger()
 
@@ -23,7 +23,7 @@ CORS(app)
 # create uploader worker
 # TODO: move queue creation to uploader, like notary
 upload_queue = mp.Queue()
-uploader = Uploader(upload_queue, log_queue)
+uploader = Uploader(upload_queue)
 uploader.run()
 
 notary_queue = start_notary()
