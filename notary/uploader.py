@@ -47,7 +47,13 @@ class Uploader:
         self.logger.info('starting queue processing')
         while True:
             self.logger.info('waiting for file to process')
-            filename, file_stream = self.upload_queue.get()
+
+            try:
+                filename, file_stream = self.upload_queue.get()
+            except KeyboardInterrupt:
+                self.logger.info('exitting')
+                break
+
             self.logger.info(f'processing {filename}')
             try:
                 self.s3.upload_fileobj(file_stream, self.bucket_name, filename)

@@ -56,7 +56,12 @@ class EthereumHandler():
         self.logger.info('starting queue processing')
         while True:
             self.logger.info('waiting for data to process')
-            file_name, file_bytes = self.notary_queue.get()
+
+            try:
+                file_name, file_bytes = self.notary_queue.get()
+            except KeyboardInterrupt:
+                self.logger.info('exitting')
+                break
 
             digester = sha256()
             digester.update(file_bytes)
