@@ -15,6 +15,7 @@ def start_notary():
 
     return notary_queue
 
+
 class EthereumHandler():
     def __init__(self, notary_queue):
         self.notary_queue = notary_queue

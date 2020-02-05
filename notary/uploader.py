@@ -1,5 +1,4 @@
 import boto3
-import os
 import multiprocessing as mp
 import logging
 from botocore.exceptions import NoCredentialsError
@@ -12,6 +11,7 @@ def start_uploader():
     uploader.run()
 
     return uploader, upload_queue
+
 
 class Uploader:
     def __init__(self, upload_queue):
