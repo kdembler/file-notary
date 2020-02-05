@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from dotenv import load_dotenv
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_pymongo import PyMongo
 from flask_jwt_extended import (
@@ -12,6 +12,7 @@ from logger import logger_init
 from uploader import start_uploader
 from eth import start_notary
 from io import BytesIO
+from uuid import uuid4
 import utils
 import logging
 import datetime
@@ -58,8 +59,9 @@ def register():
         'files': []
     }
     mongo.db.users.insert(user)
-    access_token = create_access_token(identity=user_code)
+    logger.debug('user created')
 
+    access_token = create_access_token(identity=user_code)
     return {'user_code': user_code, 'access_token': access_token}
 
 
@@ -81,32 +83,60 @@ def login():
     return {'access_token': access_token}
 
 
-@app.route('/upload', methods=['POST'])
-def upload():
-    logger.info('processing request')
+@app.route('/files', methods=['GET'])
+@jwt_required
+def get_files():
+    user_code = get_jwt_identity()
+    user_files = mongo.db.users.find_one({'_id': user_code})['files']
+    mapped_files = [utils.sanitize_file_dict(file) for file in user_files]
+    return jsonify(mapped_files), 200
+
+
+@app.route('/files', methods=['POST'])
+@jwt_required
+def upload_file():
     if 'file' not in request.files:
         return utils.bad_request('No file in request')
+
     file = request.files['file']
     filename = file.filename
-    if filename == '':
-        return utils.bad_request('Empty filename')
+
+    if not filename:
+        return utils.bad_request('Filename cannot be empty')
 
     file_bytes = file.read()
     file.close()
     file_stream = BytesIO(file_bytes)
 
-    upload_queue.put((filename, file_stream))
-    notary_queue.put((filename, file_bytes))
+    file_id = str(uuid4())
+    user_code = get_jwt_identity()
+    user_file = {
+        '_id': file_id,
+        'created': datetime.datetime.utcnow(),
+        'filename': filename,
+    }
+    mongo.db.users.update({'_id': user_code}, {'$push': {'files': user_file}})
+    logger.info(f'saved file with id {file_id}')
 
-    return {'file_name': filename}, 200
+    upload_queue.put((file_id, file_stream))
+    notary_queue.put((file_id, file_bytes))
+
+    return {'id': file_id}, 200
 
 
-@app.route('/download-url')
-def generate_download_url():
-    file = request.args.get('file')
-    if file is None:
-        return utils.bad_request('Missing file query param')
-    if len(file) < 1:
-        return utils.bad_request('File name too short')
-    url = uploader.generate_download_url(file)
-    return {'url': url}, 200
+@app.route('/files/<file_id>')
+@jwt_required
+def generate_download_url(file_id):
+    if not file_id:
+        return utils.bad_request('Missing file id')
+
+    user_code = get_jwt_identity()
+    user_files = mongo.db.users.find_one({'_id': user_code})['files']
+    raw_file = next((file for file in user_files if file['_id'] == file_id), None)
+    if not raw_file:
+        return {'msg': 'File not found'}, 404
+
+    file = utils.sanitize_file_dict(raw_file)
+    url = uploader.generate_download_url(file_id)
+    file['download_url'] = url
+    return file, 200

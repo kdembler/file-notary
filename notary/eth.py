@@ -59,7 +59,7 @@ class EthereumHandler():
             self.logger.info('waiting for data to process')
 
             try:
-                file_name, file_bytes = self.notary_queue.get()
+                file_id, file_bytes = self.notary_queue.get()
             except KeyboardInterrupt:
                 self.logger.info('exitting')
                 break
@@ -70,8 +70,8 @@ class EthereumHandler():
 
             try:
                 nonce = self.web3.eth.getTransactionCount(self.address)
-                self.logger.info(f'notarizing {file_name} with hash {file_hash} and nonce {nonce}')
-                txn = self.notary_contract.functions.setFileHash(file_name, file_hash).buildTransaction({
+                self.logger.info(f'notarizing {file_id} with hash {file_hash} and nonce {nonce}')
+                txn = self.notary_contract.functions.setFileHash(file_id, file_hash).buildTransaction({
                     'from': self.address,
                     'nonce': nonce
                 })
@@ -80,4 +80,4 @@ class EthereumHandler():
                 txn_hash = self.web3.eth.sendRawTransaction(signed_txn.rawTransaction)
                 self.logger.info(f'transaction {txn_hash.hex()} sent')
             except Exception as e:
-                self.logger.error(f'failed to notarize {file_name}: {e}')
+                self.logger.error(f'failed to notarize {file_id}: {e}')

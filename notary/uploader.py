@@ -49,14 +49,14 @@ class Uploader:
             self.logger.info('waiting for file to process')
 
             try:
-                filename, file_stream = self.upload_queue.get()
+                file_id, file_stream = self.upload_queue.get()
             except KeyboardInterrupt:
                 self.logger.info('exitting')
                 break
 
-            self.logger.info(f'processing {filename}')
+            self.logger.info(f'processing {file_id}')
             try:
-                self.s3.upload_fileobj(file_stream, self.bucket_name, filename)
-                self.logger.info(f'processed {filename}')
+                self.s3.upload_fileobj(file_stream, self.bucket_name, file_id)
+                self.logger.info(f'processed {file_id}')
             except NoCredentialsError:
                 self.logger.error(f'invalid credentials')

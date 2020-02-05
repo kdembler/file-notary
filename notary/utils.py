@@ -20,3 +20,7 @@ def generate_random_code():
     generator = random.SystemRandom()
     random_digits = (generator.choice(string.digits) for _ in range(6))
     return ''.join(random_digits)
+
+
+def sanitize_file_dict(file):
+    return {'id': file['_id'], 'created': file['created'].isoformat(), 'filename': file['filename']}
