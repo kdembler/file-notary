@@ -4,7 +4,7 @@ import string
 
 
 def bad_request(message):
-    return {'error': message}, 400
+    return {'msg': message}, 400
 
 
 def safe_getenv(key):
