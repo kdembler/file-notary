@@ -1,3 +1,4 @@
+// TODO: switch to SHA-3
 export async function getFileHash(file: Blob | File): Promise<string> {
   const content = await file.arrayBuffer()
   const digest = await crypto.subtle.digest('SHA-256', content)

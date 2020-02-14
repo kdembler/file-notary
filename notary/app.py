@@ -30,6 +30,7 @@ CORS(app)
 mongo_uri = utils.safe_getenv('MONGO_URI')
 app.config['MONGO_URI'] = mongo_uri
 mongo = PyMongo(app)
+# TODO: make sure connection is open
 logger.info(f'initiated db connection to {mongo_uri}')
 
 jwt_secret = utils.safe_getenv('JWT_SECRET')
@@ -87,6 +88,7 @@ def login():
 @jwt_required
 def get_files():
     user_code = get_jwt_identity()
+    # TODO: first make sure user isn't None
     user_files = mongo.db.users.find_one({'_id': user_code})['files']
     mapped_files = [utils.sanitize_file_dict(file) for file in user_files]
     return jsonify(mapped_files), 200
