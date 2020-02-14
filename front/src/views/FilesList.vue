@@ -1,5 +1,11 @@
 <template>
-  <v-data-table class="table" :headers="headers" :items="files" :disable-pagination="true" :disable-sort="true">
+  <v-data-table
+    class="table mt-5 elevation-4"
+    :headers="headers"
+    :items="files"
+    :disable-pagination="true"
+    :disable-sort="true"
+  >
     <template v-slot:body="{ items }">
       <tbody>
         <tr v-for="item in items" :key="item.name">

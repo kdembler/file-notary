@@ -2,14 +2,15 @@
   <v-app>
     <v-app-bar app color="primary" dark>
       <div class="d-flex align-center">
-        <h2>File Notary</h2>
+        <h2 class="mr-3">File Notary</h2>
+        <v-btn text to="/upload" class="mr-2"><v-icon left>mdi-file-upload</v-icon>Upload file</v-btn>
+        <v-btn text to="/files"><v-icon left>mdi-file-multiple</v-icon>Files list</v-btn>
       </div>
     </v-app-bar>
 
     <v-content>
       <div class="d-flex flex-column justify-center align-center">
-        <uploader />
-        <uploads-list class="mt-5 elevation-4" />
+        <router-view />
       </div>
     </v-content>
   </v-app>
@@ -17,16 +18,8 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import Uploader from '@/components/Uploader.vue'
-import UploadsList from '@/components/UploadsList.vue'
 
-export default Vue.extend({
-  components: {
-    Uploader,
-    UploadsList,
-  },
-})
+export default Vue.extend({})
 </script>
 
-<style lang="scss">
-</style>
+<style lang="scss"></style>

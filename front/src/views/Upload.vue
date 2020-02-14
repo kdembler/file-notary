@@ -29,7 +29,7 @@
 <script lang="ts">
 import Vue from 'vue'
 import axios from 'axios'
-import { createFile } from '../types/file'
+import { createFile } from '@/types/file'
 import { getFileHash } from '@/utils'
 
 export default Vue.extend({
