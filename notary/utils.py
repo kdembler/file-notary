@@ -3,8 +3,16 @@ import random
 import string
 
 
-def bad_request(message):
-    return {'msg': message}, 400
+def bad_request_response(msg):
+    return create_response(msg, 400)
+
+
+def unauthorized_response(msg):
+    return create_response(msg, 401)
+
+
+def create_response(msg, code=200):
+    return {'msg': msg}, code
 
 
 def safe_getenv(key):

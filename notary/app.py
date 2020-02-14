@@ -75,15 +75,15 @@ def register():
 @app.route('/login', methods=['POST'])
 def login():
     if not request.is_json:
-        return utils.bad_request('Body must be JSON')
+        return utils.bad_request_response('Body must be JSON')
 
     user_code = request.json['user_code']
     if not user_code:
-        return utils.bad_request('Missing user_code param')
+        return utils.bad_request_response('Missing user_code param')
 
     user = mongo.db.users.find_one({'_id': user_code})
     if not user:
-        return {'msg': 'Unknown user code'}, 401
+        return utils.unauthorized_response('Unknown user code')
 
     access_token = create_access_token(identity=user_code)
 
@@ -94,8 +94,8 @@ def login():
 @jwt_required
 def get_files():
     user_code = get_jwt_identity()
-    # TODO: first make sure user isn't None
-    user_files = mongo.db.users.find_one({'_id': user_code})['files']
+    user = mongo.db.users.find_one({'_id': user_code})
+    user_files = user['files']
     mapped_files = [utils.sanitize_file_dict(file) for file in user_files]
     return jsonify(mapped_files), 200
 
@@ -104,13 +104,13 @@ def get_files():
 @jwt_required
 def upload_file():
     if 'file' not in request.files:
-        return utils.bad_request('No file in request')
+        return utils.bad_request_response('No file in request')
 
     file = request.files['file']
     filename = file.filename
 
     if not filename:
-        return utils.bad_request('Filename cannot be empty')
+        return utils.bad_request_response('Filename cannot be empty')
 
     file_bytes = file.read()
     file.close()
@@ -136,13 +136,13 @@ def upload_file():
 @jwt_required
 def generate_download_url(file_id):
     if not file_id:
-        return utils.bad_request('Missing file id')
+        return utils.bad_request_response('Missing file id')
 
     user_code = get_jwt_identity()
-    user_files = mongo.db.users.find_one({'_id': user_code})['files']
-    raw_file = next((file for file in user_files if file['_id'] == file_id), None)
-    if not raw_file:
+    result = mongo.db.users.find_one({'_id': user_code, 'files._id': file_id}, {'files.$': 1})
+    if not result:
         return {'msg': 'File not found'}, 404
+    raw_file = result['files'][0]
 
     file = utils.sanitize_file_dict(raw_file)
     url = uploader.generate_download_url(file_id)
