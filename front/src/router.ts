@@ -1,35 +1,45 @@
 import Vue from 'vue'
-import VueRouter, { RouteConfig } from 'vue-router'
+import VueRouter, { NavigationGuard, RouteConfig } from 'vue-router'
 import Upload from '@/views/Upload.vue'
 import FilesList from '@/views/FilesList.vue'
 import Register from '@/views/Register.vue'
 import Login from '@/views/Login.vue'
+import { UserService } from '@/services/user'
 
 Vue.use(VueRouter)
 
-const routes: RouteConfig[] = [
-  {
-    path: '/upload',
-    component: Upload,
-  },
-  {
-    path: '/files',
-    component: FilesList,
-  },
-  {
-    path: '/login',
-    component: Login,
-  },
-  {
-    path: '/register',
-    component: Register,
-  },
-  {
-    path: '*',
-    redirect: '/upload',
-  },
-]
+const createRouter = (userService: UserService) => {
+  const loggedInGuard: NavigationGuard = (_, __, next) => (userService.isLoggedIn ? next() : next('/login'))
+  const notLoggedInGuard: NavigationGuard = (_, __, next) => (userService.isLoggedIn ? next('/') : next())
 
-const router = new VueRouter({ routes })
+  const routes: RouteConfig[] = [
+    {
+      path: '/upload',
+      component: Upload,
+      beforeEnter: loggedInGuard,
+    },
+    {
+      path: '/files',
+      component: FilesList,
+      beforeEnter: loggedInGuard,
+    },
+    {
+      path: '/login',
+      component: Login,
+      beforeEnter: notLoggedInGuard,
+    },
+    {
+      path: '/register',
+      component: Register,
+      beforeEnter: notLoggedInGuard,
+    },
+    {
+      path: '*',
+      redirect: '/upload',
+    },
+  ]
 
-export default router
+  return new VueRouter({ routes })
+}
+
+export default createRouter
