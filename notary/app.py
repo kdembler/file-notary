@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from flask_pymongo import PyMongo
+from pymongo.errors import ServerSelectionTimeoutError
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
     get_jwt_identity
@@ -29,9 +30,14 @@ CORS(app)
 
 mongo_uri = utils.safe_getenv('MONGO_URI')
 app.config['MONGO_URI'] = mongo_uri
-mongo = PyMongo(app)
-# TODO: make sure connection is open
+mongo = PyMongo(app, serverSelectionTimeoutMS = 2000)
+try:
+    # check connection
+    mongo.cx.server_info()
+except ServerSelectionTimeoutError:
+    raise Exception(f'failed to connect to db at {mongo_uri}')
 logger.info(f'initiated db connection to {mongo_uri}')
+
 
 jwt_secret = utils.safe_getenv('JWT_SECRET')
 app.config['JWT_SECRET_KEY'] = jwt_secret
