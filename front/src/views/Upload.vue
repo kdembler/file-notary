@@ -1,103 +1,77 @@
 <template>
-  <v-card class="mt-5" minWidth="500">
-    <v-container>
-      <v-row>
-        <v-col>
-          <h1>Uploader</h1>
-        </v-col>
-      </v-row>
-      <v-row>
-        <v-col cols="12">
-          <input class="d-none" ref="fileInput" type="file" value="Select file" @change="onFileChange($event)" />
-          <v-btn @click="onSelectFileClick()" :diabled="uploadInProgress">Select file</v-btn>
-        </v-col>
-        <template v-if="fileToUpload">
-          <v-col cols="12">
-            <span>Selected file: {{ fileToUpload.name }}</span>
-          </v-col>
-        </template>
-      </v-row>
-      <v-row>
-        <v-col cols="12">
-          <v-btn @click="uploadFile()" :disabled="!fileToUpload" :loading="uploadInProgress">Upload file</v-btn>
-        </v-col>
-      </v-row>
-    </v-container>
+  <v-card minWidth="500" max-width="500">
+    <v-card-title>File upload</v-card-title>
+    <v-card-subtitle>Select files to upload and notarize</v-card-subtitle>
+    <v-card-text>
+      <v-file-input show-size label="Select file" v-model="file" />
+      <span class="text-center d-block mb-n5 status-text">{{ statusText }}</span>
+    </v-card-text>
+    <v-card-actions class="pb-5">
+      <v-btn
+        :disabled="!fileSelected"
+        :loading="displayLoader"
+        @click="uploadFile()"
+        class="mx-auto px-5"
+        color="primary"
+        x-large
+      >
+        Upload
+      </v-btn>
+    </v-card-actions>
   </v-card>
 </template>
 
 <script lang="ts">
 import Vue from 'vue'
-import axios from 'axios'
-import { createFile } from '@/types/file'
-import { getFileHash } from '@/utils'
+import Component from 'vue-class-component'
+import { getFileHash } from '@/utils/hash'
+import { Inject } from 'vue-property-decorator'
+import NotaryService from '@/services/notary'
 
-export default Vue.extend({
-  data() {
-    return {
-      fileToUpload: null as File | null,
-      uploadInProgress: false,
-      uploadFinished: false,
+@Component
+export default class UploadView extends Vue {
+  @Inject('notaryService') notaryService!: NotaryService
+
+  file = null as File | null
+  status = 'INITIAL' as 'INITIAL' | 'HASHING' | 'UPLOADING'
+
+  get fileSelected() {
+    return !!this.file
+  }
+
+  get statusText() {
+    switch (this.status) {
+      case 'HASHING':
+        return 'Status: Hashing...'
+      case 'UPLOADING':
+        return 'Status: Uploading...'
+      default:
+        return ''
     }
-  },
+  }
 
-  methods: {
-    onSelectFileClick() {
-      this.$refs.fileInput.click()
-    },
+  get displayLoader() {
+    return this.status === 'HASHING' || this.status === 'UPLOADING'
+  }
 
-    onFileChange(event: Event) {
-      if (!event.target) {
-        return
-      }
-      const files = (event.target as any).files as FileList
-      if (!files || files.length < 1) {
-        return
-      }
-      this.fileToUpload = files[0]
-    },
+  async uploadFile() {
+    if (!this.file) {
+      return
+    }
 
-    async uploadFile() {
-      if (!this.fileToUpload) {
-        return
-      }
+    this.status = 'HASHING'
+    const hash = await getFileHash(this.file)
 
-      this.uploadInProgress = true
-      this.$store.commit('addFile', createFile(this.fileToUpload.name))
+    this.status = 'UPLOADING'
+    await this.notaryService.uploadFile(this.file, hash)
 
-      this.setFileHash()
-
-      const formData = new FormData()
-      formData.append('file', this.fileToUpload, this.fileToUpload.name)
-      try {
-        const response = await axios.post('http://localhost:5000/upload', formData)
-        this.$store.commit('updateFile', {
-          name: this.fileToUpload.name,
-          // TODO: verify server hash is the same as local one
-          // TODO: get rid of server hash
-          fields: { serverHash: response.data.file_hash },
-        })
-
-        this.uploadInProgress = false
-      } catch (error) {
-        console.error(error)
-      }
-    },
-
-    async setFileHash() {
-      if (!this.fileToUpload) {
-        return
-      }
-
-      const hash = await getFileHash(this.fileToUpload)
-
-      this.$store.commit('updateFile', {
-        name: this.fileToUpload.name,
-        fields: { localHash: hash },
-      })
-    },
-  },
-})
+    await this.$router.push('/files')
+  }
+}
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.status-text {
+  min-height: 22px;
+}
+</style>

@@ -40,8 +40,8 @@ import Web3 from 'web3'
 import axios from 'axios'
 import HashTableCell from '@/components/HashTableCell.vue'
 import FileNotary from './fileNotary.json'
-import { File } from '../types/file'
-import { getFileHash } from '../utils'
+import { FileInfo } from '../types/fileInfo'
+import { getFileHash } from '@/utils/hash'
 
 enum FileStatus {
   Ok,
@@ -89,7 +89,7 @@ export default Vue.extend({
   },
 
   computed: {
-    files(): File[] {
+    files(): FileInfo[] {
       return this.$store.state.files
     },
 
@@ -111,7 +111,7 @@ export default Vue.extend({
   },
 
   methods: {
-    async onDownloadClick(file: File) {
+    async onDownloadClick(file: FileInfo) {
       if (this.filesStatuses[file.name] === FileStatus.Invalid) {
         this.saveFile(file)
         return
@@ -137,7 +137,7 @@ export default Vue.extend({
       }
     },
 
-    saveFile(file: File) {
+    saveFile(file: FileInfo) {
       const a = document.createElement('a')
       a.href = file.objectUrl as string
       a.download = file.name

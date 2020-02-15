@@ -15,7 +15,7 @@
           color="primary"
           x-large
         >
-          Login
+          Log in
         </v-btn>
       </v-card-actions>
     </v-form>
@@ -26,11 +26,11 @@
 import Vue from 'vue'
 import Component from 'vue-class-component'
 import { Inject } from 'vue-property-decorator'
-import { UserService } from '@/services/user'
+import { AuthService } from '@/services/auth'
 
 @Component
 export default class LoginView extends Vue {
-  @Inject('userService') userService!: UserService
+  @Inject('authService') authService!: AuthService
 
   userCode = ''
   logInInProgress = false
@@ -44,7 +44,7 @@ export default class LoginView extends Vue {
       return
     }
     this.logInInProgress = true
-    await this.userService.logIn(this.userCode)
+    await this.authService.logIn(this.userCode)
     await this.$router.push({ path: '/' })
     this.logInInProgress = false
   }

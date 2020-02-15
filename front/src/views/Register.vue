@@ -19,11 +19,11 @@
 import Vue from 'vue'
 import Component from 'vue-class-component'
 import { Inject } from 'vue-property-decorator'
-import { UserService } from '@/services/user'
+import { AuthService } from '@/services/auth'
 
 @Component
 export default class LoginView extends Vue {
-  @Inject('userService') userService!: UserService
+  @Inject('authService') authService!: AuthService
 
   registerInProgress = false
   newUserCode = ''
@@ -38,7 +38,7 @@ export default class LoginView extends Vue {
 
   async register() {
     this.registerInProgress = true
-    this.newUserCode = await this.userService.register()
+    this.newUserCode = await this.authService.register()
     this.registerInProgress = false
   }
 }

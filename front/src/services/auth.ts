@@ -7,7 +7,7 @@ const TOKEN_KEY = 'FILE_NOTARY-TOKEN'
 type LoginResponse = { access_token: string }
 type RegisterResponse = { access_token: string; user_code: string }
 
-export class UserService {
+export class AuthService {
   get isLoggedIn() {
     return !!this.getToken()
   }
@@ -40,7 +40,7 @@ export class UserService {
     window.localStorage.removeItem(TOKEN_KEY)
   }
 
-  private getToken() {
+  getToken() {
     return window.localStorage.getItem(TOKEN_KEY)
   }
 

@@ -1,22 +1,30 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-import { File } from '@/types/file'
+import { FileInfo } from '@/types/fileInfo'
 
 Vue.use(Vuex)
 
-export default new Vuex.Store({
+const store = new Vuex.Store({
   state: {
-    files: [] as File[],
+    files: [] as FileInfo[],
   },
   mutations: {
-    addFile({ files }, file: File) {
+    addFile({ files }, file: FileInfo) {
       files.push(file)
     },
 
-    updateFile(state, { name, fields }) {
-      state.files = state.files.map(f => (f.name === name ? { ...f, ...fields } : f))
+    setFiles({ files }, newFiles: FileInfo[]) {
+      files = newFiles
     },
+
+    // updateFile(state, { name, fields }) {
+    //   state.files = state.files.map(f => (f.name === name ? { ...f, ...fields } : f))
+    // },
   },
   actions: {},
   modules: {},
 })
+
+export type RootStore = typeof store
+
+export default store

@@ -2,13 +2,13 @@
   <v-app>
     <v-app-bar app color="primary" dark>
       <h2 class="mr-3">File Notary</h2>
-      <template v-if="userService.isLoggedIn">
+      <template v-if="authService.isLoggedIn">
         <v-btn text to="/upload" class="mr-2"><v-icon left>mdi-file-upload</v-icon>Upload file</v-btn>
         <v-btn text to="/files"><v-icon left>mdi-file-multiple</v-icon>Files list</v-btn>
         <v-menu offset-y>
           <template v-slot:activator="{ on }">
             <v-btn class="ml-auto" text v-on="on">
-              <v-icon left>mdi-account-circle</v-icon> {{ userService.userCode }}
+              <v-icon left>mdi-account-circle</v-icon> {{ authService.userCode }}
             </v-btn>
           </template>
           <v-list>
@@ -34,16 +34,16 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import { UserService } from '@/services/user'
+import { AuthService } from '@/services/auth'
 import Component from 'vue-class-component'
 import { Inject } from 'vue-property-decorator'
 
 @Component
 export default class App extends Vue {
-  @Inject('userService') private userService!: UserService
+  @Inject('authService') private authService!: AuthService
 
   async logOut() {
-    this.userService.logOut()
+    this.authService.logOut()
     await this.$router.push('/login')
   }
 }

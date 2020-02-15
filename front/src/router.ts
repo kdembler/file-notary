@@ -4,13 +4,13 @@ import Upload from '@/views/Upload.vue'
 import FilesList from '@/views/FilesList.vue'
 import Register from '@/views/Register.vue'
 import Login from '@/views/Login.vue'
-import { UserService } from '@/services/user'
+import { AuthService } from '@/services/auth'
 
 Vue.use(VueRouter)
 
-const createRouter = (userService: UserService) => {
-  const loggedInGuard: NavigationGuard = (_, __, next) => (userService.isLoggedIn ? next() : next('/login'))
-  const notLoggedInGuard: NavigationGuard = (_, __, next) => (userService.isLoggedIn ? next('/') : next())
+const createRouter = (authService: AuthService) => {
+  const loggedInGuard: NavigationGuard = (_, __, next) => (authService.isLoggedIn ? next() : next('/login'))
+  const notLoggedInGuard: NavigationGuard = (_, __, next) => (authService.isLoggedIn ? next('/') : next())
 
   const routes: RouteConfig[] = [
     {
