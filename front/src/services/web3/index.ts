@@ -8,7 +8,7 @@ const EVENT_NAME = 'HashSet'
 const EVENT_SIG = FileNotary.abi.find(a => a.type === 'event' && a.name === EVENT_NAME)!.signature
 
 export default class Web3Service {
-  notary: Contract
+  private notary: Contract
   constructor() {
     const web3 = new Web3(web3Url)
 
