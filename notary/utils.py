@@ -31,4 +31,4 @@ def generate_random_code():
 
 
 def sanitize_file_dict(file):
-    return {'id': file['_id'], 'created': file['created'].isoformat(), 'filename': file['filename']}
+    return {'id': file['_id'], 'created': file['created'].isoformat(), 'name': file['name']}

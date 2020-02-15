@@ -118,18 +118,18 @@ def upload_file():
 
     file_id = str(uuid4())
     user_code = get_jwt_identity()
-    user_file = {
+    new_file = {
         '_id': file_id,
         'created': datetime.datetime.utcnow(),
-        'filename': filename,
+        'name': filename,
     }
-    mongo.db.users.update({'_id': user_code}, {'$push': {'files': user_file}})
+    mongo.db.users.update({'_id': user_code}, {'$push': {'files': new_file}})
     logger.info(f'saved file with id {file_id}')
 
     upload_queue.put((file_id, file_stream))
     notary_queue.put((file_id, file_bytes))
 
-    return {'id': file_id}, 200
+    return utils.sanitize_file_dict(new_file), 200
 
 
 @app.route('/files/<file_id>')
