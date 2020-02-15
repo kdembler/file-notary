@@ -5,7 +5,7 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
-    "@truffle/hdwallet-provider": "^1.0.23",
+    "@truffle/hdwallet-provider": "^1.0.31",
     "truffle": "^5.0.43"
   }
 }

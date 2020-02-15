@@ -14,10 +14,10 @@
   dependencies:
     defer-to-connect "^1.0.1"
 
-"@truffle/hdwallet-provider@^1.0.23":
-  version "1.0.23"
-  resolved "https://registry.yarnpkg.com/@truffle/hdwallet-provider/-/hdwallet-provider-1.0.23.tgz#00a586e4c8b98eb43c8b703dc60e16438a67fd5c"
-  integrity sha512-p+imSJ9TystP8JnabDmJ/wJ+YrCmMzuN6heTDRWJvqwsewmE71WLI4UCtvyPM9j3Nkjjlhn3zApSzjUdANCdRg==
+"@truffle/hdwallet-provider@^1.0.31":
+  version "1.0.31"
+  resolved "https://registry.yarnpkg.com/@truffle/hdwallet-provider/-/hdwallet-provider-1.0.31.tgz#fafb4caa7a1bc234dd2af3543fa98eb491f257e1"
+  integrity sha512-Ll8Swkfd5kB+V4v9GVC1fyZt3NFldPVsXYM4lHECF0O/Jhf6gCexHf4miRtabzzuOXNidZu5loTA9+FLGU2LnA==
   dependencies:
     any-promise "^1.3.0"
     bindings "^1.5.0"

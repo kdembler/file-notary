@@ -1,8 +1,10 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.5.0;
 
 contract FileNotary {
     mapping(string => bytes32) hashes;
     address owner;
+
+    event HashSet(string indexed fileId, bytes32 hash);
 
     constructor() public {
       owner = msg.sender;
@@ -17,5 +19,6 @@ contract FileNotary {
       require(hashes[fileId] == 0, "You cannot mutate already set hash");
 
       hashes[fileId] = hash;
+      emit HashSet(fileId, hash);
     }
 }
