@@ -1,6 +1,6 @@
 import HasherWorker from 'worker-loader!./hasher.worker'
 
-export async function getFileHash(file: File): Promise<string> {
+export async function getFileHash(file: File | Blob): Promise<string> {
   return new Promise(resolve => {
     const worker = new HasherWorker()
     worker.postMessage(file)

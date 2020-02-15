@@ -13,13 +13,14 @@ const store = new Vuex.Store({
       files.push(file)
     },
 
-    setFiles({ files }, newFiles: FileInfo[]) {
-      files = newFiles
+    setFiles(state, files: FileInfo[]) {
+      const newFiles = files.filter(f => !state.files.find(sf => sf.id === f.id))
+      state.files = [...state.files, ...newFiles]
     },
 
-    // updateFile(state, { name, fields }) {
-    //   state.files = state.files.map(f => (f.name === name ? { ...f, ...fields } : f))
-    // },
+    updateFile(state, { id, fields }) {
+      state.files = state.files.map(f => (f.id === id ? { ...f, ...fields } : f))
+    },
   },
   actions: {},
   modules: {},

@@ -5,11 +5,14 @@ import vuetify from './plugins/vuetify'
 import { AuthService } from '@/services/auth'
 import createRouter from './router'
 import NotaryService from '@/services/notary'
+import Web3Service from '@/services/web3'
 
 Vue.config.productionTip = false
 
 const authService = new AuthService()
-const notaryService = new NotaryService(authService, store)
+const web3Service = new Web3Service()
+const notaryService = new NotaryService(authService, store, web3Service)
+
 const router = createRouter(authService)
 
 new Vue({
