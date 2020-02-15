@@ -7,7 +7,7 @@ import Web3Service from '@/services/web3'
 import { getFileHash } from '@/utils/hash'
 
 export default class NotaryService {
-  client: AxiosInstance
+  private client: AxiosInstance
 
   constructor(authService: AuthService, private store: RootStore, private web3Service: Web3Service) {
     this.client = axios.create()
