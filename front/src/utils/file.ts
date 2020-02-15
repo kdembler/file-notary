@@ -2,6 +2,7 @@ import { FileInfo } from '@/types/fileInfo'
 
 export function saveFile(file: FileInfo) {
   if (!file.objectUrl) {
+    // eslint-disable-next-line no-console
     console.warn('Tried saving file without objectUrl')
     return
   }
