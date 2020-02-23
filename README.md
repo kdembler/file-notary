@@ -30,14 +30,21 @@ yarn # or npm install
 yarn migrate:kovan # or npm run migrate:kovan
 ```
 
-5. Start the `docker-compose`
+5. Build Docker containers
 
 ```sh
 cd ..
+docker build -t file-notary-frontend front
+docker build -t file-notary-backend notary
+```
+
+6. Start the `docker-compose`
+
+```sh
 docker-compose up
 ```
 
-6. After the compose starts, the frontend will be available at `localhost:80`
+7. After the compose starts, the frontend will be available at `localhost:80`
 
 ## License
 
