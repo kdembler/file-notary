@@ -1,25 +1,27 @@
-#!/usr/bin/env python3
+import datetime
+import logging
+import pathlib
+from io import BytesIO
+from uuid import uuid4
 
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from flask_pymongo import PyMongo
-from pymongo.errors import ServerSelectionTimeoutError
 from flask_jwt_extended import (
     JWTManager, jwt_required, create_access_token,
     get_jwt_identity
 )
+from flask_pymongo import PyMongo
+from pymongo.errors import ServerSelectionTimeoutError
+
+import utils
 from logger import logger_init
 from uploader import start_uploader
 from eth import start_notary
-from io import BytesIO
-from uuid import uuid4
-import utils
-import logging
-import datetime
 
 # initial configuration
-load_dotenv()
+dotenv_file_path = pathlib.Path(__file__).parent.absolute().parent / '.env'
+load_dotenv(dotenv_path=dotenv_file_path)
 logger_init()
 
 logger = logging.getLogger()
@@ -28,7 +30,8 @@ logger = logging.getLogger()
 app = Flask(__name__)
 CORS(app)
 
-mongo_uri = utils.safe_getenv('MONGO_URI')
+mongo_host = utils.safe_getenv('MONGO_HOST')
+mongo_uri = f'mongodb://{mongo_host}/notary'
 app.config['MONGO_URI'] = mongo_uri
 mongo = PyMongo(app, serverSelectionTimeoutMS = 2000)
 try:

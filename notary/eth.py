@@ -1,11 +1,11 @@
-import os
-import logging
 import json
+import logging
 import multiprocessing as mp
+import os
+
 from hashlib import sha3_256
-from web3 import Web3, HTTPProvider
-from cobra_hdwallet import HDWallet
 from utils import safe_getenv
+from web3 import Web3, HTTPProvider
 
 
 def start_notary():
@@ -32,9 +32,9 @@ class EthereumHandler():
         p.start()
 
     def _set_infura_web3(self):
-        infura_endpoint = safe_getenv("ETH_INFURA_ENDPOINT")
+        web3_endpoint = safe_getenv("ETH_NODE_ENDPOINT")
 
-        self.web3 = Web3(HTTPProvider(infura_endpoint))
+        self.web3 = Web3(HTTPProvider(web3_endpoint))
         if not self.web3.isConnected():
             raise Exception('web3 did not connect')
 
@@ -47,11 +47,11 @@ class EthereumHandler():
         )
 
     def _load_account_info(self):
-        account_mnemonic = safe_getenv("ETH_ACCOUNT_MNEMONIC")
-        hd_wallet = HDWallet()
-        account = hd_wallet.create_hdwallet(account_mnemonic)
-        self.address = account['address']
-        self.private_key = bytearray.fromhex(account['private_key'])
+        private_key = safe_getenv("ETH_PRIVATE_KEY").strip()
+        account = self.web3.eth.account.privateKeyToAccount(private_key)
+
+        self.private_key = bytearray.fromhex(private_key)
+        self.address = account.address
 
     def _process_queue(self):
         self.logger.info('starting queue processing')
