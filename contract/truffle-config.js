@@ -8,7 +8,7 @@ dotenv.config({ path: dotenvFilePath });
 const getEnv = key => {
   const value = process.env[key];
   if (!value) {
-    throw Error(`Env variable ${value} not found`);
+    throw Error(`Env variable ${key} not found`);
   }
   return value;
 };

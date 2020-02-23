@@ -39,7 +39,7 @@ class EthereumHandler():
             raise Exception('web3 did not connect')
 
     def _load_contract_info(self):
-        with open('eth/fileNotary.json') as json_file:
+        with open('artifacts/fileNotary.json') as json_file:
             contract = json.load(json_file)
         self.notary_contract = self.web3.eth.contract(
             address=contract['address'],

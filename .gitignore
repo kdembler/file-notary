@@ -2,7 +2,7 @@
 node_modules/
 dist/
 build/
-deployed/
+artifacts/
 
 .env.local
 .env.*.local

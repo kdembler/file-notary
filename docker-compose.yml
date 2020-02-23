@@ -11,6 +11,8 @@ services:
     env_file: ".env"
     environment:
       MONGO_HOST: mongo:27017
+    volumes:
+      - ./contract/artifacts:/app/artifacts
     ports:
       - "5000:5000"
     depends_on:
