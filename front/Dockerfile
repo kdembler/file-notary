@@ -1,5 +1,7 @@
 FROM node:10-slim AS builder
 
+ARG VUE_APP_WEB3_ENDPOINT
+
 RUN apt update
 RUN apt install -y make gcc g++ python
 

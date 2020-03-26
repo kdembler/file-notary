@@ -27,7 +27,6 @@
 </template>
 <script lang="ts">
 import Vue from 'vue'
-import HashTableCell from '@/components/HashTableCell.vue'
 import { FileInfo } from '@/types/fileInfo'
 import Component from 'vue-class-component'
 import NotaryService from '@/services/notary'
@@ -36,7 +35,7 @@ import { saveFile } from '@/utils/file'
 
 type FileStatus = 'UNKNOWN' | 'OK' | 'ERROR'
 
-@Component({ components: { HashTableCell } })
+@Component
 export default class FilesListView extends Vue {
   @Inject('notaryService') notaryService!: NotaryService
 
